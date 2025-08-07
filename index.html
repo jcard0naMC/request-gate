@@ -1,0 +1,100 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en" x-data="requestForm()">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dynamic Request Gate</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Alpine.js -->
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    /* Simple fade transition */
+    .fade-enter { opacity: 0; }
+    .fade-enter-active { transition: opacity .3s; opacity: 1; }
+    .fade-leave { opacity: 1; }
+    .fade-leave-active { transition: opacity .3s; opacity: 0; }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+  <!-- Gate Form -->
+  <div
+    x-show="showGate"
+    x-transition:enter="fade-enter"
+    x-transition:enter-active="fade-enter-active"
+    x-transition:leave="fade-leave"
+    x-transition:leave-active="fade-leave-active"
+    class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md"
+  >
+    <h2 class="text-2xl font-semibold mb-4">Start Your Request</h2>
+    <form @submit.prevent="submitGate">
+      <!-- Example Gate Field -->
+      <label class="block mb-2">
+        <span class="text-gray-700">Request Type</span>
+        <select x-model="gate.type" required
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring focus:ring-opacity-50">
+          <option value="" disabled>Select…</option>
+          <option>New Feature</option>
+          <option>Bug Fix</option>
+          <option>Data Export</option>
+        </select>
+      </label>
+
+      <!-- Conditional Extra Gate Question -->
+      <template x-if="gate.type === 'Bug Fix'">
+        <label class="block mb-2">
+          <span class="text-gray-700">Severity</span>
+          <select x-model="gate.severity" required
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring focus:ring-opacity-50">
+            <option value="" disabled>Select…</option>
+            <option>Low</option>
+            <option>Medium</option>
+            <option>High</option>
+          </select>
+        </label>
+      </template>
+
+      <button type="submit"
+        class="mt-4 w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition">
+        Continue →
+      </button>
+    </form>
+  </div>
+
+  <!-- Smartsheet Embed -->
+  <div
+    x-show="!showGate"
+    x-transition:enter="fade-enter"
+    x-transition:enter-active="fade-enter-active"
+    class="w-full h-screen"
+  >
+    <!-- Replace YOUR_SMARTSHEET_URL with your actual form URL -->
+    <iframe
+      :src="embedUrl"
+      class="w-full h-full border-0"
+    ></iframe>
+  </div>
+
+  <script>
+    function requestForm() {
+      return {
+        showGate: true,
+        gate: { type: '', severity: '' },
+        // Build the Smartsheet form URL with prefill params
+        get embedUrl() {
+          const base = 'https://app.smartsheet.com/b/form/YOUR_SMARTSHEET_ID';
+          const params = new URLSearchParams();
+          params.set('RequestType', this.gate.type);
+          if (this.gate.severity) params.set('Severity', this.gate.severity);
+          return base + '?' + params.toString();
+        },
+        submitGate() {
+          // Simple validation already enforced by 'required'
+          this.showGate = false;
+        }
+      }
+    }
+  </script>
+</body>
+</html>
