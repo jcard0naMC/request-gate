@@ -1,100 +1,588 @@
-<!-- index.html -->
-<!DOCTYPE html>
-<html lang="en" x-data="requestForm()">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dynamic Request Gate</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Alpine.js -->
-  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<div id="jjhq-intake" class="jj-wrap">
   <style>
-    /* Simple fade transition */
-    .fade-enter { opacity: 0; }
-    .fade-enter-active { transition: opacity .3s; opacity: 1; }
-    .fade-leave { opacity: 1; }
-    .fade-leave-active { transition: opacity .3s; opacity: 0; }
+    /* Theme */
+    #jjhq-intake {
+      --jj-pink: #eb5a9f;
+      --jj-pink-light: #f29bc0;
+      --jj-pink-dark: #d44f8d;
+      --jj-blue: #91c9ed;
+      --jj-ink: #10212b;
+      --jj-bg: #f7f7fb;
+      --jj-card: #ffffff;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+      color: var(--jj-ink);
+      line-height: 1.35;
+    }
+    #jjhq-intake * { box-sizing: border-box; }
+
+    /* Layout */
+    #jjhq-intake .hero {
+      position: relative;
+      overflow: hidden;
+      border-radius: 20px;
+      background:
+        radial-gradient(1200px 600px at -10% -20%, var(--jj-blue), transparent 60%),
+        radial-gradient(900px 500px at 110% -10%, var(--jj-pink-light), transparent 60%),
+        linear-gradient(135deg, rgba(235,90,159,.25), rgba(145,201,237,.25));
+      padding: 28px;
+      border: 1px solid #e8e8ef;
+    }
+    #jjhq-intake .hero h1 { margin: 0; font-size: 26px; letter-spacing: .2px; }
+    #jjhq-intake .hero p { margin: 8px 0 0; color: #3a4a56; }
+
+    #jjhq-intake .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #fff; border: 1px solid #e6e8ef; border-radius: 999px;
+      padding: 6px 10px; font-size: 12px;
+    }
+
+    #jjhq-intake .wrap { max-width: 1100px; margin: 18px auto; padding: 0 8px; }
+    #jjhq-intake .grid { display: grid; gap: 14px; grid-template-columns: repeat(12, minmax(0, 1fr)); }
+    #jjhq-intake .col-8 { grid-column: span 8; }
+    #jjhq-intake .col-4 { grid-column: span 4; }
+    @media (max-width: 960px){
+      #jjhq-intake .col-8, #jjhq-intake .col-4 { grid-column: span 12; }
+    }
+
+    #jjhq-intake .card {
+      background: var(--jj-card);
+      border: 1px solid #e8e8ef;
+      border-radius: 16px;
+      box-shadow: 0 1px 0 rgba(16,33,43,.03), 0 10px 40px -20px rgba(16,33,43,.25);
+    }
+    #jjhq-intake .card-h { padding: 16px 16px 0; }
+    #jjhq-intake .card-b { padding: 16px; }
+
+    #jjhq-intake .stepper { display:flex; gap:8px; align-items:center; }
+    #jjhq-intake .step { flex:1; height:6px; border-radius:999px; background:#ebeef4; overflow:hidden; }
+    #jjhq-intake .step>i { display:block; height:100%; width:0; background:linear-gradient(90deg,var(--jj-pink),var(--jj-pink-dark)); transition: width .35s ease; }
+
+    #jjhq-intake .kpis { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    #jjhq-intake .kpi { display:flex; gap:8px; align-items:center; border:1px dashed #e6e8ef; border-radius:10px; padding:8px 10px; background:#fff; }
+
+    #jjhq-intake .pill { display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:6px 10px; font-size:12px; border:1px solid #e6e8ef; background:#fff; }
+    #jjhq-intake .pill.is-urgent { border-color:#ffb3c7; background:linear-gradient(180deg,#fff, rgba(235,90,159,.06)); }
+
+    #jjhq-intake .tiles { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:10px; }
+    @media (min-width: 860px){ #jjhq-intake .tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+    #jjhq-intake .tile {
+      position:relative; border:1px solid #e6e8ef; border-radius:14px; padding:12px;
+      background: linear-gradient(180deg,#fff,#fbfbfe); cursor:pointer;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    #jjhq-intake .tile:hover { transform: translateY(-2px); box-shadow: 0 8px 24px -16px rgba(16,33,43,.45); }
+    #jjhq-intake .tile.active, #jjhq-intake .tile:focus { outline: none; border-color: var(--jj-pink); box-shadow: 0 0 0 3px rgba(235,90,159,.12); }
+    #jjhq-intake .tile:focus-visible { box-shadow: 0 0 0 3px rgba(235,90,159,.25); }
+    #jjhq-intake .tile h4 { margin: 2px 0 6px; font-size: 14px; }
+    #jjhq-intake .tile p { margin: 0; color:#4a5a65; font-size:12px; }
+    #jjhq-intake .tile .route { position:absolute; right:10px; top:10px; font-size:11px; background:#fff; border:1px solid #efeaf1; border-radius:999px; padding:4px 8px; color:#7a3a58; }
+
+    #jjhq-intake label { display:block; font-weight:600; font-size:12px; margin:10px 0 6px; }
+    #jjhq-intake input, #jjhq-intake select, #jjhq-intake textarea {
+      width:100%; border:1px solid #dfe3ea; border-radius:10px; padding:10px 12px; font-size:14px; background:#fff; outline:none; transition: border-color .15s ease, box-shadow .15s;
+    }
+    #jjhq-intake input:focus, #jjhq-intake select:focus, #jjhq-intake textarea:focus { border-color: var(--jj-pink); box-shadow: 0 0 0 3px rgba(235,90,159,.12); }
+    #jjhq-intake textarea { min-height: 120px; resize: vertical; }
+
+    #jjhq-intake .hint { font-size:12px; color:#56646f; margin-top:6px; }
+    #jjhq-intake .mini { font-size:12px; color:#4c5b66; }
+
+    #jjhq-intake .bar { display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-top:10px; }
+
+    #jjhq-intake .btn { appearance:none; border:0; border-radius:12px; padding:10px 14px; font-weight:650; cursor:pointer; }
+    #jjhq-intake .btn.pri { background: linear-gradient(90deg, var(--jj-pink), var(--jj-pink-dark)); color:#fff; }
+    #jjhq-intake .btn.sec { background:#fff; border:1px solid #e6e8ef; }
+    #jjhq-intake .btn.ghost { background:transparent; border:1px dashed #d9dfe6; }
+    #jjhq-intake .btn[disabled] { opacity:.55; cursor:not-allowed; }
+
+    #jjhq-intake .alert { display:flex; gap:10px; align-items:flex-start; border:1px solid #ffe3ea; background: linear-gradient(180deg,#fff, rgba(255,192,203,.12)); padding:10px; border-radius:12px; }
+
+    #jjhq-intake .review { display:grid; gap:10px; }
+    #jjhq-intake .review .row { display:flex; gap:10px; }
+    #jjhq-intake .review .row>div { flex:1; border:1px dashed #e7eaf0; border-radius:10px; padding:10px; }
+
+    #jjhq-intake .toast {
+      position:fixed; inset:auto 16px 16px auto; background:#10212b; color:#fff; border-radius:12px; padding:10px 12px;
+      box-shadow:0 10px 30px -20px rgba(0,0,0,.6); display:none; gap:10px; align-items:center; z-index:9999;
+    }
+    #jjhq-intake .toast.show { display:flex; }
+
+    #jjhq-intake .ribbon {
+      position:absolute; inset:auto -28px 18px auto; transform:rotate(-12deg);
+      background: linear-gradient(90deg,var(--jj-blue),var(--jj-pink-light)); color:#073044; font-weight:700; padding:6px 26px; border-radius:999px; border:1px solid rgba(7,48,68,.08); box-shadow:0 10px 30px -20px rgba(7,48,68,.6); font-size:12px;
+    }
+
+    #jjhq-intake .stickybar { position:sticky; bottom:0; background:#fff; border-top:1px solid #eceef4; padding:8px; border-bottom-left-radius:16px; border-bottom-right-radius:16px; display:flex; gap:8px; justify-content:flex-end; }
+
+    #jjhq-intake .tag { display:inline-flex; gap:6px; align-items:center; border:1px solid #e6e8ef; background:#fff; border-radius:999px; padding:6px 10px; font-size:12px; }
+
+    #jjhq-intake .shadow-in { box-shadow: inset 0 0 0 1px rgba(16,33,43,.06), inset 0 8px 40px -30px rgba(16,33,43,.45); }
+    #jjhq-intake .divider { height:1px; background:#eceff5; margin:12px 0; }
+
+    /* Errors */
+    #jjhq-intake .err { color: #9a1b4a; font-size: 12px; margin-top: 6px; display:none; }
+    #jjhq-intake .show-err { display:block; }
+    #jjhq-intake input[aria-invalid="true"] { border-color: #ff8fb3; box-shadow: 0 0 0 3px rgba(235,90,159,.18); }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      #jjhq-intake .step>i { transition: none; }
+    }
   </style>
-</head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
-  <!-- Gate Form -->
-  <div
-    x-show="showGate"
-    x-transition:enter="fade-enter"
-    x-transition:enter-active="fade-enter-active"
-    x-transition:leave="fade-leave"
-    x-transition:leave-active="fade-leave-active"
-    class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md"
-  >
-    <h2 class="text-2xl font-semibold mb-4">Start Your Request</h2>
-    <form @submit.prevent="submitGate">
-      <!-- Example Gate Field -->
-      <label class="block mb-2">
-        <span class="text-gray-700">Request Type</span>
-        <select x-model="gate.type" required
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring focus:ring-opacity-50">
-          <option value="" disabled>Select…</option>
-          <option>New Feature</option>
-          <option>Bug Fix</option>
-          <option>Data Export</option>
-        </select>
-      </label>
 
-      <!-- Conditional Extra Gate Question -->
-      <template x-if="gate.type === 'Bug Fix'">
-        <label class="block mb-2">
-          <span class="text-gray-700">Severity</span>
-          <select x-model="gate.severity" required
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring focus:ring-opacity-50">
-            <option value="" disabled>Select…</option>
-            <option>Low</option>
-            <option>Medium</option>
-            <option>High</option>
-          </select>
-        </label>
-      </template>
+  <div class="wrap">
+    <div class="hero card">
+      <div class="badge">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l3 7 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1 3-7z" stroke="#d44f8d" stroke-width="1.25" fill="url(#g)"/></svg>
+        <strong>HQ Request Intake (Prototype)</strong>
+      </div>
+      <h1>Jack and Jill of America, Inc. — Single Point of Entry</h1>
+      <p>Capture the essentials up front, preview routing, then hand-off to the correct Smartsheet.</p>
+      <span class="ribbon">Demo • Front-end only</span>
+      <div class="kpis">
+        <span class="kpi" aria-live="polite"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12h18" stroke="#d44f8d"/><path d="M12 3v18" stroke="#91c9ed"/></svg><b id="jj-step-label">Step 1 of 3</b></span>
+        <span class="kpi"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="#d44f8d"/><path d="M8 12h8" stroke="#91c9ed"/><path d="M12 8v8" stroke="#91c9ed"/></svg><span>Auto-Urgent: <b id="jj-auto-urgent">No</b></span></span>
+        <span class="kpi"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10" stroke="#d44f8d"/></svg><span>Route: <b id="jj-route-label">—</b></span></span>
+      </div>
+    </div>
 
-      <button type="submit"
-        class="mt-4 w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition">
-        Continue →
-      </button>
-    </form>
+    <div class="grid" style="margin-top:14px">
+      <div class="col-8">
+        <div class="card">
+          <div class="card-h">
+            <div class="stepper" aria-hidden="true">
+              <div class="step"><i id="jj-step-1"></i></div>
+              <div class="step"><i id="jj-step-2"></i></div>
+              <div class="step"><i id="jj-step-3"></i></div>
+            </div>
+          </div>
+
+          <div class="card-b">
+            <!-- Step 1 -->
+            <div id="jj-step-1-pane">
+              <div class="bar">
+                <h3 style="margin:0" id="jj-type-heading">Step 1 — Pick what best describes your request</h3>
+                <span class="pill" id="jj-pri-pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l9 9-9 11-9-11 9-9z" stroke="#d44f8d"/></svg><b id="jj-pri-label">Normal Priority</b></span>
+              </div>
+              <div class="tiles" id="jj-tiles" role="listbox" aria-labelledby="jj-type-heading"></div>
+              <div class="divider"></div>
+              <div class="bar">
+                <button class="btn sec" id="jj-continue-1" disabled>Continue</button>
+                <small class="mini">You can change your selection later.</small>
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div id="jj-step-2-pane" style="display:none">
+              <div class="bar">
+                <h3 style="margin:0">Step 2 — Tell us the basics</h3>
+                <div class="tag"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="#91c9ed"/></svg><span>Routes to: <b id="jj-route-chip">TBD</b></span></div>
+              </div>
+
+              <div class="grid" style="margin-top:6px">
+                <div class="col-4">
+                  <label for="jj-title">Request Title</label>
+                  <input type="text" id="jj-title" placeholder="E.g., Chapter Anniversary Social Post" autocomplete="off" aria-describedby="err-title">
+                  <div class="err" id="err-title">Title is required.</div>
+                </div>
+                <div class="col-4">
+                  <label for="jj-name">Primary Contact Name</label>
+                  <input type="text" id="jj-name" placeholder="First & Last" autocomplete="name" aria-describedby="err-name">
+                  <div class="err" id="err-name">Name is required.</div>
+                </div>
+                <div class="col-4">
+                  <label for="jj-email">Email</label>
+                  <input type="email" id="jj-email" placeholder="name@example.org" autocomplete="email" inputmode="email" aria-describedby="err-email">
+                  <div class="err" id="err-email">Enter a valid email.</div>
+                </div>
+                <div class="col-4">
+                  <label for="jj-phone">Phone</label>
+                  <input type="tel" id="jj-phone" placeholder="(555) 000-0000" autocomplete="tel" aria-describedby="err-phone">
+                  <div class="err" id="err-phone">Optional, but please use digits only.</div>
+                </div>
+                <div class="col-4">
+                  <label for="jj-chapter">Chapter/Region</label>
+                  <input list="jj-chapters" id="jj-chapter" placeholder="Search or enter" autocomplete="organization">
+                  <datalist id="jj-chapters">
+                    <option>Arlington (VA)</option><option>Atlanta (GA)</option><option>Baton Rouge (LA)</option>
+                    <option>Chicago (IL)</option><option>Columbia (SC)</option><option>Dallas (TX)</option>
+                    <option>Detroit (MI)</option><option>Houston (TX)</option><option>Los Angeles (CA)</option>
+                    <option>Miami (FL)</option><option>New York (NY)</option><option>Philadelphia (PA)</option>
+                    <option>Seattle (WA)</option>
+                  </datalist>
+                </div>
+                <div class="col-4">
+                  <label for="jj-due">Desired Due Date</label>
+                  <input type="date" id="jj-due">
+                  <div class="hint">If the due date is &lt; 3 business days away, we’ll auto-mark this as <b>Urgent</b>.</div>
+                  <div class="mini" id="jj-bizdays-hint" aria-live="polite"></div>
+                </div>
+                <div class="col-12" style="grid-column:1/-1">
+                  <label for="jj-details">What do you need?</label>
+                  <textarea id="jj-details" placeholder="Provide context, goals, links, and any key copy."></textarea>
+                </div>
+                <div class="col-12" style="grid-column:1/-1">
+                  <div class="alert"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="margin-top:2px" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="#d44f8d"/><path d="M12 7v6M12 16v1" stroke="#d44f8d"/></svg>
+                    <div><b>Attachments come later.</b>
+                      <div class="mini">This first step just routes your request. Any collateral will be collected in the follow-up Smartsheet form.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+              <div class="bar">
+                <button class="btn sec" id="jj-back-2">Back</button>
+                <span style="flex:1"></span>
+                <button class="btn pri" id="jj-review" disabled>Review</button>
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div id="jj-step-3-pane" style="display:none">
+              <div class="bar">
+                <h3 style="margin:0">Step 3 — Review & Route Preview</h3>
+                <span class="pill" id="jj-pri-pill-2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l9 9-9 11-9-11 9-9z" stroke="#d44f8d"/></svg><b id="jj-pri-label-2">Normal Priority</b></span>
+              </div>
+
+              <div class="review" style="margin-top:6px">
+                <div class="row">
+                  <div><div class="mini">Request Type</div><div><b id="jj-review-type">—</b></div></div>
+                  <div><div class="mini">Route</div><div><b id="jj-review-route">—</b></div></div>
+                </div>
+                <div class="row">
+                  <div><div class="mini">Title</div><div id="jj-review-title">—</div></div>
+                  <div><div class="mini">Contact</div><div id="jj-review-contact">—</div></div>
+                </div>
+                <div class="row">
+                  <div><div class="mini">Chapter/Region</div><div id="jj-review-chapter">—</div></div>
+                  <div><div class="mini">Desired Due Date</div><div id="jj-review-due">—</div></div>
+                </div>
+                <div class="row">
+                  <div style="flex:1 0 100%"><div class="mini">Details</div><div id="jj-review-details">—</div></div>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+              <div class="bar">
+                <button class="btn sec" id="jj-back-3">Back</button>
+                <div class="tag"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 12l4 4 8-8" stroke="#2bb673"/></svg><span>Smartsheet: <b id="jj-smartsheet">TBD</b></span></div>
+                <span style="flex:1"></span>
+                <button class="btn ghost" id="jj-copy">Copy JSON preview</button>
+                <button class="btn pri" id="jj-submit">Looks good</button>
+              </div>
+              <div class="stickybar">
+                <span class="mini">By continuing you acknowledge this is a demo (no data is sent).</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-4">
+        <div class="card shadow-in">
+          <div class="card-b">
+            <h3 style="margin:0 0 8px 0">Routing logic (demo)</h3>
+            <p class="mini">Your selection determines the Smartsheet destination and SLA target.</p>
+            <div class="divider"></div>
+            <div id="jj-routing-box"><div class="mini">Choose a request type to see routing.</div></div>
+            <div class="divider"></div>
+            <h4 style="margin:0 0 6px 0">Why single entry?</h4>
+            <ul class="mini" style="margin:0 0 0 18px;line-height:1.5">
+              <li>Ensures complete info the first time</li>
+              <li>Auto-routes to the right team</li>
+              <li>Visibility for HQ leadership</li>
+              <li>Faster response to chapters/partners</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- Smartsheet Embed -->
-  <div
-    x-show="!showGate"
-    x-transition:enter="fade-enter"
-    x-transition:enter-active="fade-enter-active"
-    class="w-full h-screen"
-  >
-    <!-- Replace YOUR_SMARTSHEET_URL with your actual form URL -->
-    <iframe
-      :src="embedUrl"
-      class="w-full h-full border-0"
-    ></iframe>
+  <div class="toast" id="jj-toast" role="status" aria-live="polite" aria-atomic="true">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 12l4 4 8-8" stroke="#fff"/></svg>
+    <span id="jj-toast-msg"></span>
+    <button class="btn sec" style="padding:6px 8px" id="jj-toast-close" aria-label="Close notification">Close</button>
   </div>
 
   <script>
-    function requestForm() {
-      return {
-        showGate: true,
-        gate: { type: '', severity: '' },
-        // Build the Smartsheet form URL with prefill params
-        get embedUrl() {
-          const base = 'https://app.smartsheet.com/b/form/YOUR_SMARTSHEET_ID';
-          const params = new URLSearchParams();
-          params.set('RequestType', this.gate.type);
-          if (this.gate.severity) params.set('Severity', this.gate.severity);
-          return base + '?' + params.toString();
-        },
-        submitGate() {
-          // Simple validation already enforced by 'required'
-          this.showGate = false;
+    (function(){
+      const $ = s => document.querySelector(s);
+      const $$ = s => document.querySelectorAll(s);
+
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const state = { step: 1, type: '', route: {}, isUrgent: false, toastTimer: null };
+
+      const types = [
+        { id:'comms', name:'Communications', desc:'Press, social, web, or visual design support.', route:{ short:'Comms', label:'Communications/Marketing Team', sheet:'Comms & Marketing Requests', sla:'3-5 biz days' } },
+        { id:'tech', name:'Technology', desc:'SharePoint/Smartsheet/Power Automate, email, web.', route:{ short:'Tech', label:'Technology Committee', sheet:'Technology & Systems Support', sla:'3-5 biz days' } },
+        { id:'events', name:'Events/Protocol', desc:'National events, protocol, run of show, materials.', route:{ short:'Events', label:'National Events & Protocol', sheet:'Events & Protocol Requests', sla:'5-10 biz days' } },
+        { id:'membership', name:'Membership', desc:'Member records, chapter rosters, credentials.', route:{ short:'Membership', label:'Membership Services', sheet:'Membership Support', sla:'2-4 biz days' } },
+        { id:'finance', name:'Finance', desc:'Invoices, reimbursements, purchases, budgets.', route:{ short:'Finance', label:'Finance Office', sheet:'Finance Requests', sla:'3-7 biz days' } },
+        { id:'program', name:'National Program', desc:'Program ops, initiatives, partnerships.', route:{ short:'Programs', label:'Program Operations', sheet:'Program Requests', sla:'5-10 biz days' } },
+        { id:'legislative', name:'Legislative Affairs', desc:'On The Hill, advocacy, public policy.', route:{ short:'Legislative', label:'Legislative Affairs', sheet:'Legislative Requests', sla:'5-10 biz days' } },
+        { id:'other', name:'Other/General', desc:'Not sure? Start here and we will triage.', route:{ short:'HQ Triage', label:'HQ Triage Queue', sheet:'General Intake', sla:'3-5 biz days' } }
+      ];
+
+      const form = { title:'', name:'', email:'', phone:'', chapter:'', due:'', details:'' };
+
+      const el = {
+        tiles: $('#jj-tiles'),
+        routingBox: $('#jj-routing-box'),
+        step1: $('#jj-step-1-pane'), step2: $('#jj-step-2-pane'), step3: $('#jj-step-3-pane'),
+        stepBar1: $('#jj-step-1'), stepBar2: $('#jj-step-2'), stepBar3: $('#jj-step-3'),
+        stepLabel: $('#jj-step-label'), autoUrgent: $('#jj-auto-urgent'), routeLabel: $('#jj-route-label'),
+        routeChip: $('#jj-route-chip'), priLabel: $('#jj-pri-label'), priLabel2: $('#jj-pri-label-2'),
+        priPill: $('#jj-pri-pill'), priPill2: $('#jj-pri-pill-2'),
+        toast: $('#jj-toast'), toastMsg: $('#jj-toast-msg'),
+        cont1: $('#jj-continue-1'), reviewBtn: $('#jj-review'),
+        title: $('#jj-title'), name: $('#jj-name'), email: $('#jj-email'), phone: $('#jj-phone'), chapter: $('#jj-chapter'), due: $('#jj-due'), details: $('#jj-details'),
+        err: { title: $('#err-title'), name: $('#err-name'), email: $('#err-email'), phone: $('#err-phone') },
+        bizdaysHint: $('#jj-bizdays-hint')
+      };
+
+      // --- Render tiles with roving tabindex for keyboard a11y ---
+      function renderTiles(){
+        el.tiles.innerHTML = types.map((t, idx) => `
+          <button class="tile" data-id="${t.id}" role="option" aria-selected="false" tabindex="${idx===0?0:-1}">
+            <span class="route">${t.route.short}</span>
+            <h4>${t.name}</h4>
+            <p>${t.desc}</p>
+          </button>`).join('');
+        const btns = [...el.tiles.querySelectorAll('.tile')];
+        btns.forEach(btn => btn.addEventListener('click', () => pickType(btn.dataset.id, {focus:true})));
+        el.tiles.addEventListener('keydown', e => {
+          const keys = ['ArrowRight','ArrowDown','ArrowLeft','ArrowUp','Home','End',' ' ,'Enter'];
+          if(!keys.includes(e.key)) return;
+          e.preventDefault();
+          const items = [...el.tiles.querySelectorAll('.tile')];
+          let idx = items.findIndex(i => i.tabIndex === 0);
+          if(e.key === 'ArrowRight' || e.key === 'ArrowDown') idx = Math.min(items.length-1, idx+1);
+          else if(e.key === 'ArrowLeft' || e.key === 'ArrowUp') idx = Math.max(0, idx-1);
+          else if(e.key === 'Home') idx = 0; else if(e.key === 'End') idx = items.length-1;
+          if([' ','Enter'].includes(e.key)) { items[idx].click(); return; }
+          items.forEach(i => i.tabIndex = -1);
+          items[idx].tabIndex = 0; items[idx].focus();
+        });
+      }
+
+      function pickType(id, opts={}){
+        state.type = id;
+        const t = types.find(x => x.id === id);
+        state.route = t ? t.route : {};
+        el.routeLabel.textContent = t ? t.route.label : '—';
+        el.routeChip.textContent = t ? t.route.label : 'TBD';
+        [...el.tiles.children].forEach(c => {
+          const is = c.dataset.id === id;
+          c.classList.toggle('active', is);
+          c.setAttribute('aria-selected', String(is));
+          c.tabIndex = is ? 0 : -1;
+        });
+        if(opts.focus){ const active = el.tiles.querySelector('.tile.active'); active && active.focus(); }
+        updateRoutingBox();
+        el.cont1.disabled = !state.type;
+        persist();
+      }
+
+      function updateRoutingBox(){
+        const t = types.find(x=>x.id===state.type);
+        if(!t){ el.routingBox.innerHTML = `<div class="mini">Choose a request type to see routing.</div>`; return; }
+        el.routingBox.innerHTML = `
+          <div class="tag"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="#91c9ed"/></svg><span>Selected: <b>${t.name}</b></span></div>
+          <div class="kpis" style="margin-top:10px">
+            <span class="pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 12l4 4 8-8" stroke="#2bb673"/></svg><span>${t.route.sheet}</span></span>
+            <span class="pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12h16" stroke="#d44f8d"/></svg><span>SLA: <b>${t.route.sla}</b></span></span>
+          </div>
+          <div class="hint">This is illustrative; final routing connects to live Smartsheets.</div>`;
+      }
+
+      function setStep(n){
+        state.step = n;
+        el.stepLabel.textContent = `Step ${n} of 3`;
+        el.stepBar1.style.width = n>=1 ? '33%' : '0';
+        el.stepBar2.style.width = n>=2 ? '66%' : '0';
+        el.stepBar3.style.width = n>=3 ? '100%' : '0';
+        el.step1.style.display = n===1 ? 'block' : 'none';
+        el.step2.style.display = n===2 ? 'block' : 'none';
+        el.step3.style.display = n===3 ? 'block' : 'none';
+        const behavior = prefersReduced ? 'auto' : 'smooth';
+        document.querySelector('#jjhq-intake').scrollIntoView({ behavior, block: 'start' });
+        persist();
+      }
+
+      function businessDaysUntil(d){
+        if(!d) return 9999;
+        const start = new Date(); start.setHours(0,0,0,0);
+        const end = new Date(d + 'T00:00:00');
+        if(isNaN(end)) return 9999;
+        let days = 0, cur = new Date(start);
+        const dir = end >= start ? 1 : -1;
+        while ((dir>0 && cur < end) || (dir<0 && cur > end)){
+          cur.setDate(cur.getDate()+dir);
+          const wd = cur.getDay();
+          if(wd !== 0 && wd !== 6) days += dir;
+        }
+        return Math.abs(days);
+      }
+
+      function recalcUrgency(){
+        const n = businessDaysUntil(form.due);
+        state.isUrgent = n < 3 && n >= 0;
+        el.priPill.classList.toggle('is-urgent', state.isUrgent);
+        el.priPill2.classList.toggle('is-urgent', state.isUrgent);
+        el.priLabel.textContent = state.isUrgent ? 'Marked Urgent' : 'Normal Priority';
+        el.priLabel2.textContent = state.isUrgent ? 'Urgent (auto)' : 'Normal Priority';
+        el.autoUrgent.textContent = state.isUrgent ? 'Yes' : 'No';
+        if(el.bizdaysHint){
+          if(!form.due) el.bizdaysHint.textContent = '';
+          else el.bizdaysHint.textContent = `${n} business day${n===1?'':'s'} from today`;
         }
       }
-    }
+
+      function showToast(msg){
+        el.toastMsg.textContent = msg;
+        el.toast.classList.add('show');
+        clearTimeout(state.toastTimer);
+        state.toastTimer = setTimeout(hideToast, 4000);
+      }
+      function hideToast(){ el.toast.classList.remove('show'); }
+
+      function fmt(dateStr){
+        try{
+          const p = new Date(dateStr + 'T00:00:00');
+          return p.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
+        }catch(e){ return dateStr; }
+      }
+
+      function emailValid(v){
+        return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+      }
+
+      function validateStep2(){
+        form.title = el.title.value.trim();
+        form.name = el.name.value.trim();
+        form.email = el.email.value.trim();
+        form.phone = el.phone.value.replace(/[^\d]/g,'');
+        form.chapter = el.chapter.value.trim();
+        form.due = el.due.value;
+        form.details = el.details.value.trim();
+
+        const titleOk = form.title.length > 0;
+        const nameOk  = form.name.length > 0;
+        const emailOk = emailValid(form.email);
+
+        toggleErr(el.title, el.err.title, titleOk);
+        toggleErr(el.name,  el.err.name,  nameOk);
+        toggleErr(el.email, el.err.email, emailOk);
+
+        recalcUrgency();
+        persist();
+
+        const allOk = titleOk && nameOk && emailOk;
+        el.reviewBtn.disabled = !allOk;
+        return allOk;
+      }
+
+      function toggleErr(input, errEl, ok){
+        input.setAttribute('aria-invalid', ok ? 'false' : 'true');
+        if(errEl) errEl.classList.toggle('show-err', !ok);
+      }
+
+      function goReview(){
+        if(!state.type){ showToast('Pick a request type to continue.'); return; }
+        if(!validateStep2()){ showToast('Please fix the highlighted fields.'); return; }
+        $('#jj-review-type').textContent = (types.find(x=>x.id===state.type)||{}).name || '—';
+        $('#jj-review-route').textContent = state.route.label || '—';
+        $('#jj-review-title').textContent = form.title || '—';
+        $('#jj-review-contact').textContent = (form.name || '—') + ' • ' + (form.email || '—');
+        $('#jj-review-chapter').textContent = form.chapter || '—';
+        $('#jj-review-due').textContent = form.due ? fmt(form.due) : '—';
+        $('#jj-review-details').textContent = form.details || '—';
+        $('#jj-smartsheet').textContent = state.route.sheet || 'TBD';
+        setStep(3);
+      }
+
+      function copyJSON(){
+        const data = { type: state.type, route: state.route, label: (types.find(x=>x.id===state.type)||{}).name, urgent: state.isUrgent, form: {...form}, preview:'This is a demo — no data is transmitted.' };
+        const text = JSON.stringify(data, null, 2);
+        navigator.clipboard.writeText(text).then(()=> showToast('JSON preview copied.')).catch(()=> showToast('Copy failed — select and copy manually.'));
+      }
+
+      function fakeSubmit(){ showToast('Demo complete — ready to hand off to Smartsheet step.'); }
+
+      function bind(){
+        renderTiles();
+        $('#jj-continue-1').addEventListener('click', ()=> setStep(2));
+        $('#jj-back-2').addEventListener('click', ()=> setStep(1));
+        $('#jj-review').addEventListener('click', goReview);
+        $('#jj-back-3').addEventListener('click', ()=> setStep(2));
+        $('#jj-copy').addEventListener('click', copyJSON);
+        $('#jj-submit').addEventListener('click', fakeSubmit);
+
+        el.due.addEventListener('change', () => { form.due = el.due.value; recalcUrgency(); persist(); });
+
+        // Live validation and Enter-to-review
+        [el.title, el.name, el.email, el.phone, el.chapter, el.details].forEach(inp => {
+          inp.addEventListener('input', () => validateStep2());
+          inp.addEventListener('keydown', (e) => { if(e.key==='Enter' && !el.reviewBtn.disabled){ e.preventDefault(); goReview(); } });
+        });
+
+        // Simple phone formatting for readability (US-centric)
+        el.phone.addEventListener('input', () => {
+          const d = el.phone.value.replace(/\D/g,'').slice(0,10);
+          const parts = d.match(/(\d{0,3})(\d{0,3})(\d{0,4})/);
+          el.phone.value = !parts[2] ? parts[1] : `(${parts[1]}) ${parts[2]}${parts[3] ? '-' + parts[3] : ''}`;
+        });
+
+        // Toast close
+        $('#jj-toast-close').addEventListener('click', hideToast);
+        document.addEventListener('keydown', (e) => { if(e.key === 'Escape') hideToast(); });
+      }
+
+      // --- Persistence ---
+      const STORAGE_KEY = 'jjhq-intake';
+      function persist(){
+        try{
+          const payload = { state: { step: state.step, type: state.type, isUrgent: state.isUrgent }, form };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+        }catch(_){ /* why: storage quota */ }
+      }
+      function restore(){
+        try{
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if(!raw) return;
+          const data = JSON.parse(raw);
+          if(data?.state?.type){ pickType(data.state.type); }
+          Object.assign(form, data.form||{});
+          el.title.value = form.title||'';
+          el.name.value = form.name||'';
+          el.email.value = form.email||'';
+          el.phone.value = form.phone ? String(form.phone) : '';
+          el.chapter.value = form.chapter||'';
+          el.due.value = form.due||'';
+          el.details.value = form.details||'';
+          validateStep2();
+        }catch(_){ /* ignore */ }
+      }
+
+      // --- Init ---
+      function init(){
+        bind();
+        // Set min date to today
+        const today = new Date(); const mm = String(today.getMonth()+1).padStart(2,'0'); const dd = String(today.getDate()).padStart(2,'0');
+        el.due.min = `${today.getFullYear()}-${mm}-${dd}`;
+
+        // Hash deep link: #type=comms
+        const hashType = (location.hash.match(/type=([a-z]+)/i)||[])[1];
+        if(hashType && types.some(t=>t.id===hashType)) pickType(hashType, {focus:false});
+
+        restore();
+        setStep(1);
+      }
+
+      init();
+    })();
   </script>
-</body>
-</html>
+</div>
